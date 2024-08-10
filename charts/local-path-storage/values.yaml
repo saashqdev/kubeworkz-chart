@@ -1,0 +1,22 @@
+global:
+  dependencesEnable:
+    localPathStorage: "true"
+
+  # kubeworkz hub config
+  hub:
+    registry: hub.docker.com
+    project: kubeworkz
+    username: kubeworkz
+    password: XXX
+    email: kubeworkz@gmail.com
+
+  # kubeworkz all images
+  images:
+    localPathStorageProvisioner: rancher/local-path-provisioner:v0.0.19-m
+    localPathStorageConfigmap: busybox:latest-m
+
+## local-path-config/deployment.yaml
+#provisioner:
+#
+## local-path-config/configmap.yaml
+#configmap:

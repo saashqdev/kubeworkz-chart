@@ -1,0 +1,8 @@
+{{- if eq .Values.global.componentsEnable.kubeworkz "true" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeworkz-feature-config
+  namespace: {{ template "kubeworkz.namespace" . }}
+---
+{{- end }}

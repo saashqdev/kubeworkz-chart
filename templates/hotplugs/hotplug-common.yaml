@@ -1,0 +1,52 @@
+apiVersion: hotplug.kubeworkz.io/v1
+kind: Hotplug
+metadata:
+  name: common
+spec:
+  component:
+    - name: elasticsearch
+      namespace: elasticsearch
+      pkgName: elasticsearch-7.8.1.tgz
+      status: "{{ .Values.global.hotPlugEnable.common.elasticsearch }}"
+      env: |
+        service:
+          type: NodePort
+          nodePort: 32200
+    - env: |
+        grafana:
+          enabled: false
+        prometheus:
+          enabled: "{{ .Values.global.hotPlugEnable.common.monitoring }}"
+          prometheusSpec:
+            externalLabels:
+              cluster: {{ "{{.cluster}}" | quote }}
+            remoteWrite:
+            {{- if eq .Values.global.componentsEnable.kubeworkz "true" }}
+            - url: http://kubeworkz-thanos-receive:19291/api/v1/receive
+            {{- else }}
+            - url: http://{{ .Values.global.nodeIP }}:31291/api/v1/receive
+            {{- end }}
+      name: kubeworkz-monitoring
+      namespace: kubeworkz-monitoring
+      pkgName: kubeworkz-monitoring-15.4.12.tgz
+      status: "{{ .Values.global.hotPlugEnable.common.monitoring }}"
+    - name: kubeworkz-thanos
+      namespace: kubeworkz-monitoring
+      pkgName: thanos-3.18.0.tgz
+      status: "{{ .Values.global.hotPlugEnable.common.thanos }}"
+    - name: logseer
+      namespace: logseer
+      pkgName: logseer-2.3.0.tgz
+      status: "{{ .Values.global.hotPlugEnable.common.logseer }}"
+    - env: |
+        clustername: {{ "{{.cluster}}" | quote }}
+        elasticsearch:
+        {{- if eq .Values.global.componentsEnable.kubeworkz "true" }}
+          address: elasticsearch-master.elasticsearch.svc:9200
+        {{- else }}
+          address: {{ .Values.global.nodeIP }}:32200
+        {{- end }}
+      name: logagent
+      namespace: logagent
+      pkgName: logagent-1.3.0.tgz
+      status: "{{ .Values.global.hotPlugEnable.common.logagent }}"

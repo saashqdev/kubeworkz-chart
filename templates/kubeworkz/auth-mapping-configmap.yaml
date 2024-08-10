@@ -1,0 +1,44 @@
+{{- if eq .Values.global.componentsEnable.kubeworkz "true" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeworkz-auth-mapping
+  namespace: {{ template "kubeworkz.namespace" . }}
+data:
+  deployments.manage: "deployments;deployments/rollback;deployments/scale;deployments/status;replicasets;replicasets/scale;replicasets/status;dashboards;horizontalpodautoscalers;horizontalpodautoscalers/status;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  statefulsets.manage: "statefulsets;statefulsets/scale;statefulsets/status;dashboards;horizontalpodautoscalers;horizontalpodautoscalers/status;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  daemonsets.manage: "daemonsets;daemonsets/status;dashboards;horizontalpodautoscalers;horizontalpodautoscalers/status;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  cronjobs.manage: "cronjobs;cronjobs/status;jobs;jobs/status;dashboards;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  jobs.manage: "jobs;jobs/status;dashboards;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  pods.manage: "dashboards;events;pods;pods/log;pods/attach;pods/status;pods/exec"
+  services.manage: "services;services/status;endpoints;events;pods"
+  ingresses.manage: "ingresses;ingresses/status;services;secrets"
+  loadbalancer.manager: "loadbalancers;dashboards;events"
+  stroage.manage: "persistentvolumeclaims;persistentvolumeclaims/status;pods;dashboards"
+  secrets.manage: "secrets"
+  configmaps.manage: "configmaps"
+  pdb.manage: "poddisruptionbudgets;poddisruptionbudgets/status"
+  olm.manage: "catalogsources;packagemanifests;clusterserviceversions;operatorgroups;subscriptions;installplans"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeworkz-auth-platform-mapping
+  namespace: {{ template "kubeworkz.namespace" . }}
+data:
+  deployments.manage: "deployments;deployments/rollback;deployments/scale;deployments/status;replicasets;replicasets/scale;replicasets/status;dashboards;horizontalpodautoscalers;horizontalpodautoscalers/status;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  statefulsets.manage: "statefulsets;statefulsets/scale;statefulsets/status;dashboards;horizontalpodautoscalers;horizontalpodautoscalers/status;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  daemonsets.manage: "daemonsets;daemonsets/status;dashboards;horizontalpodautoscalers;horizontalpodautoscalers/status;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  cronjobs.manage: "cronjobs;cronjobs/status;jobs;jobs/status;dashboards;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  jobs.manage: "jobs;jobs/status;dashboards;events;pods;pods/log;pods/attach;pods/status;pods/exec;configmaps;secrets;resourcequotas;persistentvolumeclaims"
+  pods.manage: "dashboards;events;pods;pods/log;pods/attach;pods/status;pods/exec"
+  services.manage: "services;services/status;endpoints;events;pods"
+  ingresses.manage: "ingresses;ingresses/status;services;secrets"
+  loadbalancer.manager: "loadbalancers;dashboards;events"
+  stroage.manage: "persistentvolumeclaims;persistentvolumeclaims/status;pods;dashboards"
+  secrets.manage: "secrets"
+  configmaps.manage: "configmaps"
+  pdb.manage: "poddisruptionbudgets;poddisruptionbudgets/status"
+  olm.manage: "catalogsources;packagemanifests;clusterserviceversions;operatorgroups;subscriptions;installplans"
+  crds.manage: "customresourcedefinitions"
+  {{- end }}

@@ -1,0 +1,13 @@
+{{- if eq .Values.global.componentsEnable.kubeworkz "true" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubeworkz-auth-config
+  namespace: {{ template "kubeworkz.namespace" . }}
+data:
+  github: |
+    enabled: {{ .Values.kubeworkz.authConfig.github.enabled }}
+    clientId: {{ .Values.kubeworkz.authConfig.github.clientId }}
+    clientSecret: {{ .Values.kubeworkz.authConfig.github.clientSecret }}
+---
+{{- end }}

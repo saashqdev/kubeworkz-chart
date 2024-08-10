@@ -1,0 +1,34 @@
+{{- if eq .Values.global.componentsEnable.kubeworkz "true" }}
+apiVersion: hotplug.kubeworkz.io/v1
+kind: Hotplug
+metadata:
+  name: {{ .Values.warden.containers.warden.args.cluster }}
+spec:
+  component:
+    - name: elasticsearch
+      namespace: elasticsearch
+      pkgName: elasticsearch-7.8.1.tgz
+      status: "{{ .Values.global.hotPlugEnable.pivot.elasticsearch }}"
+    - env: |
+        grafana:
+          enabled: true
+        prometheus:
+          prometheusSpec:
+            externalLabels:
+              cluster: {{ "{{.cluster}}" | quote }}
+            remoteWrite:
+            - url: http://kubeworkz-thanos-receive:19291/api/v1/receive
+      name: kubeworkz-monitoring
+      status: "{{ .Values.global.hotPlugEnable.pivot.monitoring }}"
+    - env: |
+        receive:
+          tsdbRetention: 7d
+          replicaCount: 1
+          replicationFactor: 1
+      name: kubeworkz-thanos
+      status: "{{ .Values.global.hotPlugEnable.pivot.thanos }}"
+    - name: logseer
+      status: "{{ .Values.global.hotPlugEnable.pivot.logseer }}"
+    - name: logagent
+      status: "{{ .Values.global.hotPlugEnable.pivot.logagent }}"
+{{- end }}

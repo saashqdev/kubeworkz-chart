@@ -1,0 +1,145 @@
+{{- if eq .Values.global.componentsEnable.kubeworkz "true" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubeworkz
+  namespace: {{ template "kubeworkz.namespace" . }}
+  labels:
+    kubeworkz.io/app: kubeworkz
+spec:
+  replicas: {{ .Values.kubeworkz.replicas }}
+  selector:
+    matchLabels:
+      kubeworkz.io/app: kubeworkz
+  template:
+    metadata:
+      labels:
+        kubeworkz.io/app: kubeworkz
+        app: kubeworkz
+    spec:
+      {{- with .Values.kubeworkz.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kubeworkz.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.kubeworkz.tolerations}}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: kubeworkz
+          image: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.kubeworkz }}"
+          imagePullPolicy: IfNotPresent
+          resources:
+          {{- toYaml .Values.kubeworkz.resources | nindent 12 }}
+          args:
+            - -log-file=/etc/logs/cube.log
+            - -max-size={{ .Values.kubeworkz.args.maxSize }}
+            - -max-backups={{ .Values.kubeworkz.args.maxBackups }}
+            - -max-age={{ .Values.kubeworkz.args.maxAge }}
+            - -compress={{ .Values.kubeworkz.args.compress }}
+            - -log-level={{ .Values.kubeworkz.args.logLevel }}
+            - -json-encode={{ .Values.kubeworkz.args.jsonEncode }}
+            - -stacktrace-level={{ .Values.kubeworkz.args.stacktraceLevel }}
+            - -secure-port={{ .Values.kubeworkz.args.securePort }}
+            - -tls-cert=/etc/tls/tls.crt
+            - -tls-key=/etc/tls/tls.key
+            - -webhook-cert=/etc/tls
+            - -webhook-server-port={{ .Values.kubeworkz.args.webhookServerPort }}
+            - -leader-elect={{ .Values.kubeworkz.args.leaderElect }}
+            - -generic-auth-is-enable={{ .Values.kubeworkz.args.genericAuthIsEnable }}
+            - -generic-auth-url={{ .Values.kubeworkz.args.genericAuthUrl }}
+            - -generic-auth-method={{ .Values.kubeworkz.args.genericAuthMethod }}
+            - -generic-auth-scheme={{ .Values.kubeworkz.args.genericAuthScheme }}
+            - -generic-auth-insecure-skip-verify={{ .Values.kubeworkz.args.genericAuthInsecureSkikVerify }}
+            - -enable-version-conversion={{ .Values.kubeworkz.args.enableVersionConversion }}
+          env:
+            - name: CUBE_NAMESPACE
+              value: {{ template "kubeworkz.namespace" . }}
+            - name: DOWNLOAD_CHARTS
+              value: "{{ .Values.kubeworkz.env.downloadCharts }}"
+            - name: DOWNLOAD_CHARTS_URL
+              value: "{{ .Values.kubeworkz.env.downloadChartsUrl }}"
+            - name: WARDEN_IMAGE
+              value: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.warden }}"
+            - name: WARDEN_INIT_IMAGE
+              value: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.wardenInit }}"
+            - name: PIVOT_CUBE_CLUSTER_IP_SVC
+              value: {{ .Values.kubeworkz.env.pivotCubeSvc }}
+            - name: PIVOT_CUBE_HOST
+              value: "{{ .Values.global.nodeIP }}:30443"
+            - name: JWT_SECRET
+              value: {{ .Values.kubeworkz.env.jwtSecret }}
+            - name: DEPENDENCE_JOB_IMAGE
+              value: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.dependenceJob }}"
+            - name: GIN_MODE
+              value: release
+            - name: RETAIN_MEMBER_CLUSTER_RESOURCE
+              value: "{{ .Values.kubeworkz.env.retainMemberClusterResource }}"
+            - name: WARDEN_REGISTER_MODE_ENABLE
+              value: "{{ .Values.kubeworkz.env.wardenRegisterModeEnable }}"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 7777
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 7777
+              scheme: HTTP
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 1
+            successThreshold: 1
+            failureThreshold: 3
+          volumeMounts:
+            - name: cube-tls
+              mountPath: "/etc/tls"
+              readOnly: true
+            - name: logs
+              mountPath: "/etc/logs"
+            - name: helm-pkg
+              mountPath: "/root/helmchartpkg"
+            - name: localtime
+              mountPath: /etc/localtime
+            - mountPath: /i18n
+              name: i18n-config
+      volumes:
+        - name: cube-tls
+          secret:
+            secretName: cube-tls-secret
+        - name: helm-pkg
+          hostPath:
+            path: /etc/cube/helm-pkg
+            type: DirectoryOrCreate
+        - name: logs
+          hostPath:
+            path: "{{ .Values.global.dataDir }}/log/kubeworkz"
+            type: DirectoryOrCreate
+        - name: localtime
+          hostPath:
+            path: /etc/localtime
+        - configMap:
+            defaultMode: 420
+            items:
+              - key: en.toml
+                path: en.toml
+              - key: zh.toml
+                path: zh.toml
+            name: kubeworkz-language-config
+          name: i18n-config
+---
+{{- end }}

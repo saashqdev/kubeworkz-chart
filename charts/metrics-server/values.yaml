@@ -1,0 +1,19 @@
+global:
+  dependencesEnable:
+    metricServer: "true"
+
+  # kubeworkz hub config
+  hub:
+    registry: hub.docker.com
+    project: kubeworkz
+    username: kubeworkz
+    password: XXX
+    email: kubeworkz@gmail.com
+
+  # kubeworkz all images
+  images:
+    metricsServer: rancher/metrics-server:v0.4.1-m
+
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists

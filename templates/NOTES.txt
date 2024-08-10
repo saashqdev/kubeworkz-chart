@@ -1,0 +1,13 @@
+Thank you for installing {{ .Chart.Name }}.
+Your release is named {{ .Release.Name }}.
+To learn more about KubeWorkz, visit:
+
+  https://www.kubeworkz.io
+
+Let's have fun with KubeWorkz:
+
+Please use 'admin/admin123' to access
+
+     http://{{ .Values.global.nodeIP }}:30080
+
+You should change password after login.

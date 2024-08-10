@@ -1,0 +1,321 @@
+global:
+  # Override the deployment namespace
+  namespaceOverride: ""
+
+  # control-plane node IP which is used for exporting NodePort svc.
+  nodeIP: "x.x.x.x"
+
+  # set "true" to deploy if there were not already in cluster.
+  dependencesEnable:
+    hnc: "true"
+    ingressController: "true"
+    localPathStorage: "true"
+    metricServer: "true"
+
+  hotPlugEnable:
+    pivot:
+      logseer: "disabled"
+      logagent: "disabled"
+      elasticsearch: "disabled"
+      monitoring: "enabled"
+      thanos: "enabled"
+    common:
+      logseer: "disabled"
+      logagent: "disabled"
+      elasticsearch: "disabled"
+      monitoring: "enabled"
+      thanos: "disabled"
+
+  componentsEnable:
+    kubeworkz: "true"
+    warden: "true"
+    audit: "true"
+    webconsole: "true"
+    cloudshell: "true"
+    frontend: "true"
+
+  # imagePullSecrets for all pods
+  imagePullSecrets: [ ]
+
+  dataDir: "/data"
+
+  localKubeConfig: xx # local cluster kubeconfig base64
+  pivotKubeConfig: xx # pivot cluster kubeconfig base64
+
+  ## kubeworkz certificate config
+  certs:
+    ## @param certs.mode "auto" and "custom" are provided
+    ## "auto" means auto generate certificate
+    ## "custom" means use user certificate
+    mode: auto
+    auto:
+      ## @param certs.auto.expiry expiry of the certificate
+      expiry: 43800h
+      ## @param certs.auto.hosts hosts of the certificate
+      hosts: [
+        "*.{{ .Release.Namespace }}.svc.cluster.local",
+        "*.{{ .Release.Namespace }}.svc",
+        "*.{{ .Release.Namespace }}",
+        "localhost",
+        "127.0.0.1"
+      ]
+    custom:
+      ## @param certs.custom.caCrt ca of the certificate
+      caCrt: |
+        -----BEGIN CERTIFICATE-----
+        XXXXXXXXXXXXXXXXXXXXXXXXXXX
+        -----END CERTIFICATE-----
+      ## @param certs.custom.caKey key of the ca
+      caKey: |
+        -----BEGIN RSA PRIVATE KEY-----
+        XXXXXXXXXXXXXXXXXXXXXXXXXXX
+        -----END RSA PRIVATE KEY-----
+      ## @param certs.custom.crt crt of the certificate
+      crt: |
+        -----BEGIN CERTIFICATE-----
+        XXXXXXXXXXXXXXXXXXXXXXXXXXX
+        -----END CERTIFICATE-----
+      ## @param certs.custom.key key of the certificate
+      key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        XXXXXXXXXXXXXXXXXXXXXXXXXXX
+        -----END RSA PRIVATE KEY-----
+
+  # kubeworkz hub config
+  hub:
+    registry: docker.io
+    project: kubeworkz
+    username: kubeworkz
+    password: xx
+    email: saashqdev@gmail.com
+
+  # kubeworkz all images
+  images:
+    frontend: frontend:v1.3.0-multi
+    kubeworkz: kube:v1.8.2
+    warden: warden:v1.8.2
+    wardenInit: warden-init:v1.8.2
+    dependenceJob: warden-dependence:v1.2.0
+    audit: audit:v1.2.0
+    webconsole: webconsole:v1.3.0
+    cloudshell: cloudshell:v1.2.6
+    hnc: hnc-manager:v1.0.0
+    ingressController: ingress-nginx-controller:v1.2.0
+    ingressControllerJob: ingress-nginx-kube-webhook-certgen:v1.1.1
+    localPathStorageProvisioner: rancher-local-path-provisioner:v0.0.19-m
+    localPathStorageConfigmap: busybox:latest-m
+    metricsServer: rancher-metrics-server:v0.4.1-m
+    cfssl: cfssl:v1.6.5
+    kubectl: bitnami-kubectl:1.25.7
+
+kubeworkz:
+  # kubeworkz/deployment.yaml
+  replicas: 1
+  resources: { }
+    # If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+    # limits:
+    #   cpu: 500m
+    #   memory: 1Gi
+    # requests:
+    #   cpu: 500m
+  #   memory: 1Gi
+  nodeSelector: { }
+  affinity: { }
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+  args:
+    maxSize: 1000
+    maxBackups: 7
+    maxAge: 3
+    compress: false
+    logLevel: info
+    jsonEncode: false
+    stacktraceLevel: error
+    securePort: 7443
+    webhookServerPort: 9443
+    leaderElect: true
+    genericAuthIsEnable: false
+    genericAuthUrl: example.com
+    genericAuthMethod: GET
+    genericAuthScheme: https
+    genericAuthInsecureSkikVerify: true
+    enableVersionConversion: false
+  env:
+    downloadCharts: "false" # todo: this value can be removed
+    downloadChartsUrl: "https://kubeworkz.s3.amazonaws.com/helm-chart/third/third-charts.tar.gz" # todo: this value can be removed
+    pivotKubeSvc: kubeworkz:7443 # todo: this value can be removed
+    jwtSecret: "56F0D8DB90241C6E"
+    retainMemberClusterResource: "true"
+    wardenRegisterModeEnable: "true"
+
+  # kubeworkz/kubeworkz-auth-config.yaml
+  authConfig:
+    github:
+      enabled: false
+      clientId: ""
+      clientSecret: ""
+
+warden:
+  # warden/deployment.yaml
+  replicas: 1
+  nodeSelector: { }
+  affinity: { }
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+    - effect: NoSchedule
+      key: node.kubeworkz.io
+      operator: Exists
+  containers:
+    warden:
+      resources: { }
+        # If you do want to specify resources, uncomment the following
+      # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+      #        limits:
+      #          cpu: 300m
+      #          memory: 512Mi
+      #        requests:
+      #          cpu: 300m
+      #          memory: 512Mi
+      args:
+        maxSize: 1000
+        maxBackups: 7
+        maxAge: 3
+        compress: false
+        logLevel: info
+        jsonEncode: false
+        stacktraceLevel: error
+        cluster: "pivot-cluster"  # current cluster name
+        leaderElect: false
+        inMemberCluster: false    # is member cluster or not
+        isClusterWritable: true   # is cluster allowed to write
+      env:
+        JWTSecret: "56F0D8DB90241C6E"  # jwt secret for jwt token gen
+        DetachedNsLabelKey: "detached.kubeworkz.io/ns"
+    downloader:
+      env:
+        downloadCharts: "false"  # download charts or use local
+        downloadURL: "" # where to download charts, empty means use default
+
+audit:
+  # audit/deployment.yaml
+  replicas: 1
+  resources: { }
+    # If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  #    limits:
+  #      cpu: 100m
+  #      memory: 128Mi
+  #    requests:
+  #      cpu: 100m
+  #      memory: 128Mi
+  nodeSelector: { }
+  affinity: { }
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+
+webconsole:
+  # webconsole/deployment.yaml
+  replicas: 1
+  resources: { }
+    # If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  #    limits:
+  #      cpu: 100m
+  #      memory: 128Mi
+  #    requests:
+  #      cpu: 100m
+  #      memory: 128Mi
+  args:
+    maxSize: 1000
+    maxBackups: 7
+    maxAge: 3
+    compress: false
+    logLevel: info
+    jsonEncode: false
+    stacktraceLevel: error
+  nodeSelector: { }
+  affinity: { }
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+  jwtSecret: 56F0D8DB90241C6E
+
+cloudshell:
+  # cloudshell/deployment.yaml
+  replicas: 1
+  resources: { }
+    # If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  #    limits:
+  #      cpu: 100m
+  #      memory: 128Mi
+  #    requests:
+  #      cpu: 100m
+  #      memory: 128Mi
+  nodeSelector: { }
+  affinity: { }
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+
+frontend:
+  # frontend/deployment.yaml
+  replicas: 1
+  image: kubeworkz/frontend:v1.1.0
+  imagePullPolicy: IfNotPresent
+  resources: { }
+    # If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  #    limits:
+  #      cpu: 100m
+  #      memory: 128Mi
+  #    requests:
+  #      cpu: 100m
+  #      memory: 128Mi
+  nodeSelector: { }
+  affinity: { }
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+
+# override hnc sub chart
+hnc:
+  # hnc/deployment.yaml
+  nodeSelector: { }
+  affinity: { }
+  tolerations:
+    - key: node-role.kubernetes.io/master
+      operator: Exists
+  manager:
+    args:
+      managedLabel1: kubeworkz.hnc.x-k8s.io/tenant
+      managedLabel2: kubeworkz.hnc.x-k8s.io/project
+    resources:
+      limits:
+        cpu: 100m
+        memory: 300Mi
+      requests:
+        cpu: 100m
+        memory: 150Mi
+
+## override ingress-controller sub chart
+#ingress-controller:
+#  # ingress-controller/deployment.yaml
+#  controller:
+#  # ingress-controller/job.yaml
+#  job:
+
+## override local-path-storage sub chart
+#local-path-storage:
+#  # local-path-config/deployment.yaml
+#  provisioner:
+#
+#  # local-path-config/configmap.yaml
+#  configmap:
+
+## override metrics-server sub chart
+#metrics-server:

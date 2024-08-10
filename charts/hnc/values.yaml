@@ -1,0 +1,32 @@
+global:
+  dependencesEnable:
+    hnc: "true"
+
+  # kubeworkz hub config
+  hub:
+    registry: hub.c.163.com
+    project: kubeworkz
+    username: kubeworkz
+    password: XXX
+    email: kubeworkz@gmail.com
+
+  images:
+    hnc: hnc/hnc-manager:v1.0.0
+
+# hnc/deployment.yaml
+nodeSelector: { }
+affinity: { }
+tolerations:
+  - key: node-role.kubernetes.io/master
+    operator: Exists
+manager:
+  args:
+    managedLabel1: kubeworkz.hnc.x-k8s.io/tenant
+    managedLabel2: kubeworkz.hnc.x-k8s.io/project
+  resources:
+    limits:
+      cpu: 100m
+      memory: 300Mi
+    requests:
+      cpu: 100m
+      memory: 150Mi

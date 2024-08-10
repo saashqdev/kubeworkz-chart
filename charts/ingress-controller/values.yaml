@@ -1,0 +1,20 @@
+global:
+  dependencesEnable:
+    ingressController: "true"
+
+  # kubeworkz hub config
+  hub:
+    registry: hub.docker.com
+    project: kubeworkz
+    username: kubeworkz
+    password: XXX
+    email: kubeworkz@gmail.com
+
+  images:
+    ingressController: ingress-nginx/controller:v1.2.0
+    ingressControllerJob: ingress-nginx/kube-webhook-certgen:v1.1.1
+
+## ingress-controller/deployment.yaml
+#controller:
+## ingress-controller/job.yaml
+#job:

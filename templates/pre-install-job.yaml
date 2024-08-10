@@ -1,0 +1,162 @@
+{{- if eq .Values.global.certs.mode "auto" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: certs-config
+  namespace: {{ template "kubeworkz.namespace" . }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "2"
+data:
+  cert.yaml: |-
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: cube-tls-secret
+      namespace: {{ template "kubeworkz.namespace" . }}
+    type: kubernetes.io/tls
+    data:
+      ca.crt: |-
+        {{ print "{{ ca_crt }}" }}
+      ca.key: |-
+        {{ print "{{ ca_key }}" }}
+      tls.crt: |-
+        {{ print "{{ crt }}" }}
+      tls.key: |-
+        {{ print "{{ key }}" }}
+  static-resources-configmaps.yaml: |-
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: kubeworkz-static-resources
+      namespace: {{ template "kubeworkz.namespace" . }}
+    data:
+      {{- print "warden-webhook-configuration.yaml: " | nindent 6 }} |-
+        {{- include "warden.webhook.configuration" . | nindent 8 }}
+    {{- if eq .Values.global.componentsEnable.kubeworkz "true" }}
+      {{- print "kubeworkz-webhook-configuration.yaml: " | nindent 6 }} |-
+        {{- include "kubeworkz.webhook.configuration" . | nindent 8 }}
+    {{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kubeworkz-pre-install
+  namespace: {{ template "kubeworkz.namespace" . }}
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  parallelism: 1
+  completions: 1
+  template:
+    metadata:
+      name: kubeworkz
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: kubeworkz
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      serviceAccountName: kubeworkz-pre-job
+      restartPolicy: Never
+      initContainers:
+        - name: init
+          image: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.cfssl }}"
+          imagePullPolicy: IfNotPresent
+          workingDir: /opt/mount
+          command:
+            - /bin/sh
+            - -c
+            - |
+              bash <<'EOF'
+              set -ex
+              mkdir -p /opt/configs
+              mkdir -p /opt/certs
+              cp -r -L /opt/mount/* /opt/configs/
+              openssl req -x509 -sha256 -new -nodes -days 365 -newkey rsa:2048 -keyout "/opt/certs/server-ca.key" -out "/opt/certs/server-ca.crt" -subj "/C=xx/ST=x/L=x/O=x/OU=x/CN=ca/emailAddress=x/"
+              echo '{"signing":{"default":{"expiry":{{ printf `"%s"` .Values.global.certs.auto.expiry }},"usages":["signing","key encipherment","client auth","server auth"]}}}' > "/opt/certs/server-ca-config.json"
+              echo '{"CN":"system:admin","hosts":{{ tpl (toJson .Values.global.certs.auto.hosts) . }},"names":[{"O":"system:masters"}],"key":{"algo":"rsa","size":2048}}' | cfssl gencert -ca=/opt/certs/server-ca.crt -ca-key=/opt/certs/server-ca.key -config=/opt/certs/server-ca-config.json - | cfssljson -bare /opt/certs/kubeworkz
+              echo '{"signing":{"default":{"expiry":{{ printf `"%s"` .Values.global.certs.auto.expiry }},"usages":["signing","key encipherment","client auth","server auth"]}}}' > "/opt/certs/front-proxy-ca-config.json"
+              kubeworkz_ca=$(base64 /opt/certs/server-ca.crt | tr -d '\r\n')
+              kubeworkz_ca_key=$(base64 /opt/certs/server-ca.key | tr -d '\r\n')
+              kubeworkz_crt=$(base64 /opt/certs/kubeworkz.pem | tr -d '\r\n')
+              kubeworkz_key=$(base64 /opt/certs/kubeworkz-key.pem | tr -d '\r\n')
+              sed -i'' -e "s/{{ print "{{ ca_crt }}" }}/${kubeworkz_ca}/g" /opt/configs/cert.yaml
+              sed -i'' -e "s/{{ print "{{ ca_key }}" }}/${kubeworkz_ca_key}/g" /opt/configs/cert.yaml
+              sed -i'' -e "s/{{ print "{{ crt }}" }}/${kubeworkz_crt}/g" /opt/configs/cert.yaml
+              sed -i'' -e "s/{{ print "{{ key }}" }}/${kubeworkz_key}/g" /opt/configs/cert.yaml
+              sed -i'' -e "s/{{ print "{{ ca_crt }}" }}/${kubeworkz_ca}/g" /opt/configs/static-resources-configmaps.yaml
+              EOF
+          volumeMounts:
+            - name: mount
+              mountPath: /opt/mount
+            - name: configs
+              mountPath: /opt/configs
+      containers:
+        - name: pre-install
+          image: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.kubectl }}"
+          imagePullPolicy: IfNotPresent
+          workingDir: /opt/mount
+          command:
+            - /bin/sh
+            - -c
+            - |
+              bash <<'EOF'
+              set -ex
+              kubectl apply --server-side -f /opt/configs/
+              EOF
+          volumeMounts:
+            - name: mount
+              mountPath: /opt/mount
+            - name: configs
+              mountPath: /opt/configs
+      volumes:
+        - name: configs
+          emptyDir: {}
+        - name: mount
+          configMap:
+            name: certs-config
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubeworkz-pre-job
+  namespace: {{ template "kubeworkz.namespace" . }}
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "1"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeworkz-pre-job
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "1"
+rules:
+  - apiGroups: ['*']
+    resources: ['*']
+    verbs: ["get", "watch", "list", "create", "update", "patch", "delete"]
+  - nonResourceURLs: ['*']
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubeworkz-pre-job
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubeworkz-pre-job
+subjects:
+  - kind: ServiceAccount
+    name: kubeworkz-pre-job
+    namespace: {{ template "kubeworkz.namespace" . }}
+---
+{{- end }}
