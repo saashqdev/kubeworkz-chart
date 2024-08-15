@@ -1,7 +1,7 @@
 docker.io/kubeworkz/audit:v1.2.0
 docker.io/kubeworkz/cloudshell:v1.2.6
 docker.io/kubeworkz/webconsole:v1.3.0
-docker.io/kubeworkz/frontend:v1.3.0-multi
+docker.io/kubeworkz/frontend:v1.3.0
 docker.io/kubeworkz/kube:v1.8.2
 docker.io/kubeworkz/warden:v1.8.2
 docker.io/kubeworkz/warden-init:v1.8.2
@@ -31,3 +31,9 @@ docker.io/kubeworkz/logseer:v2.3.0
 docker.io/kubeworkz/logseer-tools:v2.3.0
 docker.elastic.co/elasticsearch/elasticsearch:7.8.1
 loggieio/loggie:v1.3.0
+
+GOPRIVATE=github.com/saashqdev/kubeworkz go get github.com/saashqdev/kubeworkz@v1.2.0
+
+github.com/saashqdev/kubeworkz v1.2.0 h1:rRa+68bTCHANbMyDdVb1qXKY0BssaqPBetoLT6Zj4YY=
+github.com/saashqdev/kubeworkz v1.2.0/go.mod h1:CHEkZ8h9jK8bgZrC43gMuY+VMDPXEoSIZtlktKS5sUU=
+
