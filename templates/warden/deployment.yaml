@@ -64,7 +64,7 @@ spec:
             - name: GIN_MODE
               value: release
             - name: TZ
-              value: Asia/Shanghai
+              value: America/Toronto
             - name: DETACHED_NS_LABEL_KEY
               value: {{ .Values.warden.containers.warden.env.DetachedNsLabelKey }}
           image: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.warden }}"
