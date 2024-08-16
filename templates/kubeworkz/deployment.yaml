@@ -61,7 +61,7 @@ spec:
             - -generic-auth-insecure-skip-verify={{ .Values.kubeworkz.args.genericAuthInsecureSkikVerify }}
             - -enable-version-conversion={{ .Values.kubeworkz.args.enableVersionConversion }}
           env:
-            - name: CUBE_NAMESPACE
+            - name: KUBE_NAMESPACE
               value: {{ template "kubeworkz.namespace" . }}
             - name: DOWNLOAD_CHARTS
               value: "{{ .Values.kubeworkz.env.downloadCharts }}"
@@ -71,9 +71,9 @@ spec:
               value: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.warden }}"
             - name: WARDEN_INIT_IMAGE
               value: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.wardenInit }}"
-            - name: PIVOT_CUBE_CLUSTER_IP_SVC
+            - name: PIVOT_KUBE_CLUSTER_IP_SVC
               value: {{ .Values.kubeworkz.env.pivotCubeSvc }}
-            - name: PIVOT_CUBE_HOST
+            - name: PIVOT_KUBE_HOST
               value: "{{ .Values.global.nodeIP }}:30443"
             - name: JWT_SECRET
               value: {{ .Values.kubeworkz.env.jwtSecret }}
@@ -120,7 +120,7 @@ spec:
       volumes:
         - name: cube-tls
           secret:
-            secretName: cube-tls-secret
+            secretName: kube_tls_secret
         - name: helm-pkg
           hostPath:
             path: /etc/cube/helm-pkg

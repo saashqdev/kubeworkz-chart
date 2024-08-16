@@ -12,7 +12,7 @@ data:
     apiVersion: v1
     kind: Secret
     metadata:
-      name: cube-tls-secret
+      name: kube_tls_secret
       namespace: {{ template "kubeworkz.namespace" . }}
     type: kubernetes.io/tls
     data:

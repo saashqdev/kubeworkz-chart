@@ -48,16 +48,16 @@ spec:
             - -in-member-cluster={{ .Values.warden.containers.warden.args.inMemberCluster }}
             - -is-cluster-writable={{ .Values.warden.containers.warden.args.isClusterWritable }}
             {{ if eq .Values.global.componentsEnable.kubeworkz "true" }}
-            - -pivot-cube-host=kubeworkz:7443
+            - -pivot-kube-host=kubeworkz:7443
             {{ else }}
-            - -pivot-cube-host={{ .Values.global.nodeIP }}:30443
+            - -pivot-kube-host={{ .Values.global.nodeIP }}:30443
             {{ end }}
             - -local-cluster-kubeconfig=/etc/kubeconfigs/local-kubeconfig
             - -pivot-cluster-kubeconfig=/etc/kubeconfigs/pivot-kubeconfig
             - -tls-cert=/etc/tls/tls.crt
             - -tls-key=/etc/tls/tls.key
           env:
-            - name: CUBE_NAMESPACE
+            - name: KUBE_NAMESPACE
               value: {{ template "kubeworkz.namespace" . }}
             - name: JWT_SECRET
               value: {{ .Values.warden.containers.warden.env.JWTSecret }}
@@ -96,7 +96,7 @@ spec:
             - mountPath: /etc/logs
               name: logs
             - mountPath: /etc/tls
-              name: cube-tls-secret
+              name: kube_tls_secret
               readOnly: true
             - mountPath: /root/helmchartpkg
               name: helm-pkg
@@ -133,10 +133,10 @@ spec:
                 path: pivot-kubeconfig
               - key: localCluster
                 path: local-kubeconfig
-        - name: cube-tls-secret
+        - name: kube_tls_secret
           secret:
             defaultMode: 420
-            secretName: cube-tls-secret
+            secretName: kube_tls_secret
         - emptyDir: {}
           name: helm-pkg
         - hostPath:
