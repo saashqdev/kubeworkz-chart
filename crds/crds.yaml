@@ -154,22 +154,22 @@ metadata:
   labels:
     kubeworkz.io/crds: "true"
   creationTimestamp: null
-  name: cuberesourcequota.quota.kubeworkz.io
+  name: kuberesourcequota.quota.kubeworkz.io
 spec:
   group: quota.kubeworkz.io
   names:
     categories:
       - quota
-    kind: CubeResourceQuota
-    listKind: CubeResourceQuotaList
-    plural: cuberesourcequota
-    singular: cuberesourcequota
+    kind: KubeResourceQuota
+    listKind: KubeResourceQuotaList
+    plural: kuberesourcequota
+    singular: kuberesourcequota
   scope: Cluster
   versions:
     - name: v1
       schema:
         openAPIV3Schema:
-          description: CubeResourceQuota is the Schema for the cuberesourcequota API
+          description: KubeResourceQuota is the Schema for the kuberesourcequota API
           properties:
             apiVersion:
               description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
@@ -180,7 +180,7 @@ spec:
             metadata:
               type: object
             spec:
-              description: CubeResourceQuotaSpec defines the desired state of CubeResourceQuota
+              description: KubeResourceQuotaSpec defines the desired state of KubeResourceQuota
               properties:
                 hard:
                   additionalProperties:
@@ -204,7 +204,7 @@ spec:
                   type: object
               type: object
             status:
-              description: CubeResourceQuotaStatus defines the observed state of CubeResourceQuota
+              description: KubeResourceQuotaStatus defines the observed state of KubeResourceQuota
               properties:
                 hard:
                   additionalProperties:
@@ -216,7 +216,7 @@ spec:
                   description: Hard is the set of enforced hard limits for each named resource. Limit always equals to request when TargetObj is NodesPoolObj
                   type: object
                 subResourceQuotas:
-                  description: SubResourceQuotas contains child resource quotas of cube resource quota. {name}.{namespace}.quota means resource quota {name}.quota means cube resource quota
+                  description: SubResourceQuotas contains child resource quotas of kube resource quota. {name}.{namespace}.quota means resource quota {name}.quota means kube resource quota
                   items:
                     type: string
                   type: array

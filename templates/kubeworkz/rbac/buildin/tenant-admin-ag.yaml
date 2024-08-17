@@ -742,7 +742,7 @@ rules:
   - apiGroups:
       - "*"
     resources:
-      - cuberesourcequota/status
+      - kuberesourcequota/status
     verbs:
       - get
       - list
@@ -755,7 +755,7 @@ rules:
   - apiGroups:
       - "*"
     resources:
-      - cuberesourcequota/status
+      - kuberesourcequota/status
     verbs:
       - get
       - list

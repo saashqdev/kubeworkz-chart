@@ -710,7 +710,7 @@ rules:
   - apiGroups:
       - "*"
     resources:
-      - cuberesourcequota
+      - kuberesourcequota
     verbs:
       - get
       - list
@@ -718,7 +718,7 @@ rules:
   - apiGroups:
       - "*"
     resources:
-      - cuberesourcequota/finalizers
+      - kuberesourcequota/finalizers
     verbs:
       - get
       - list
@@ -726,7 +726,7 @@ rules:
   - apiGroups:
       - "*"
     resources:
-      - cuberesourcequota/status
+      - kuberesourcequota/status
     verbs:
       - get
       - list

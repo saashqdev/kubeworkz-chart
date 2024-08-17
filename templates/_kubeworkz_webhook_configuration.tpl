@@ -14,9 +14,9 @@ webhooks:
         name: kubeworkz
         namespace: {{ template "kubeworkz.namespace" . }}
         port: {{ .Values.kubeworkz.args.webhookServerPort }}
-        path: /validate-quota-kubeworkz-io-v1-cube-resource-quota
+        path: /validate-quota-kubeworkz-io-v1-kube-resource-quota
     failurePolicy: Fail
-    name: vcuberesourcequota.kb.io
+    name: vkuberesourcequota.kb.io
     rules:
       - apiGroups:
           - quota.kubeworkz.io
@@ -27,7 +27,7 @@ webhooks:
           - UPDATE
           - DELETE
         resources:
-          - cuberesourcequota
+          - kuberesourcequota
     sideEffects: None
   - admissionReviewVersions:
       - v1

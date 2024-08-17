@@ -40,7 +40,7 @@ spec:
           resources:
           {{- toYaml .Values.kubeworkz.resources | nindent 12 }}
           args:
-            - -log-file=/etc/logs/cube.log
+            - -log-file=/etc/logs/kube.log
             - -max-size={{ .Values.kubeworkz.args.maxSize }}
             - -max-backups={{ .Values.kubeworkz.args.maxBackups }}
             - -max-age={{ .Values.kubeworkz.args.maxAge }}
@@ -72,7 +72,7 @@ spec:
             - name: WARDEN_INIT_IMAGE
               value: "{{ .Values.global.hub.registry }}/{{ .Values.global.hub.project }}/{{ .Values.global.images.wardenInit }}"
             - name: PIVOT_KUBE_CLUSTER_IP_SVC
-              value: {{ .Values.kubeworkz.env.pivotCubeSvc }}
+              value: {{ .Values.kubeworkz.env.pivotKubeSvc }}
             - name: PIVOT_KUBE_HOST
               value: "{{ .Values.global.nodeIP }}:30443"
             - name: JWT_SECRET
@@ -106,7 +106,7 @@ spec:
             successThreshold: 1
             failureThreshold: 3
           volumeMounts:
-            - name: cube-tls
+            - name: kube-tls
               mountPath: "/etc/tls"
               readOnly: true
             - name: logs
@@ -118,12 +118,12 @@ spec:
             - mountPath: /i18n
               name: i18n-config
       volumes:
-        - name: cube-tls
+        - name: kube-tls
           secret:
             secretName: kube_tls_secret
         - name: helm-pkg
           hostPath:
-            path: /etc/cube/helm-pkg
+            path: /etc/kube/helm-pkg
             type: DirectoryOrCreate
         - name: logs
           hostPath:
