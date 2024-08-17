@@ -4,7 +4,7 @@ global:
 
   # kubeworkz hub config
   hub:
-    registry: hub.c.163.com
+    registry: docker.io
     project: kubeworkz
     username: kubeworkz
     password: XXX
