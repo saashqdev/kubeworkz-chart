@@ -120,7 +120,7 @@ spec:
       volumes:
         - name: kube-tls
           secret:
-            secretName: kube_tls_secret
+            secretName: kube-tls-secret
         - name: helm-pkg
           hostPath:
             path: /etc/kube/helm-pkg
