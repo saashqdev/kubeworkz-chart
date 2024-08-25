@@ -738,7 +738,7 @@ rules:
       - deletecollection
       - patch
       - update
-  ### KubeWorkz resource below
+  ### Kubeworkz resource below
   - apiGroups:
       - "*"
     resources:
@@ -765,7 +765,7 @@ rules:
       - deletecollection
       - patch
       - update
-  ### KubeWorkz dependence resource bellow
+  ### Kubeworkz dependence resource below
   - apiGroups:
       - "*"  #monitoring.kubeworkz.io
     resources:

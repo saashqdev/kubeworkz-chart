@@ -1,6 +1,6 @@
-# KubeWorkz-Chart
+# Kubeworkz-Chart
 
-KubeWorkz-Chart is a helm chart for KubeWorkz. This version totally matches the KubeWorkz version. The `appVersion` of Chart.yaml will pin to a specifield KubeWorkz version.
+Kubeworkz-Chart is a helm chart for Kubeworkz. This version totally matches the Kubeworkz version. The `appVersion` of Chart.yaml will pin to a specifield Kubeworkz version.
 
 ## Prerequisites
 
@@ -113,7 +113,7 @@ kubectl delete validatingwebhookconfigurations kubeworkz-validating-webhook-conf
 To uninstall/delete the `kubeworkz` helm release in namespace `kubeworkz-system`:
 
 
-### Uninstall KubeWorkz in control plane
+### Uninstall Kubeworkz in control plane
 ```console
 helm uninstall kubeworkz -n kubeworkz-system
 ```
